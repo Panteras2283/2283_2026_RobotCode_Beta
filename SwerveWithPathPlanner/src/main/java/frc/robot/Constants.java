@@ -85,9 +85,8 @@ public class Constants {
         private static Pose2d flipPoseToRed(Pose2d bluePose) {
             return new Pose2d(
                 FIELD_LENGTH_METERS - bluePose.getX(),
-                bluePose.getY(), // Usually Y is not flipped in "Mirrored" fields, only X. 
-                                 // NOTE: Verify 2025 rules (Point Symmetry vs Reflection).
-                                 // If Point Symmetry (rotated 180): Y = FIELD_WIDTH - Y
+                FIELD_WIDTH_METERS - bluePose.getY(),
+                                 
                 new Rotation2d(Math.PI).minus(bluePose.getRotation()) // Rotate 180 - theta
             );
         }

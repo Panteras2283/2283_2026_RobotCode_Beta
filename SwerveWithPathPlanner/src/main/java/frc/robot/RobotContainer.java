@@ -26,6 +26,9 @@ import frc.robot.generated.TunerConstants;
 
 
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 
 import frc.robot.Constants;
@@ -45,11 +48,27 @@ public class RobotContainer {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
-    private final CommandXboxController joystick = new CommandXboxController(0);
+    private final CommandXboxController Driver_joystick = new CommandXboxController(0);
 
     //Subsystems
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     public final VisionSubsystem vision;
+
+    // --- LEFT CLUSTER ---
+    public final TurretSubsystem leftTurret = new TurretSubsystem(15, "LeftTurret");
+    public final ShooterSubsystem leftShooter = new ShooterSubsystem(16, 17, "LeftShooter");
+
+    // --- RIGHT CLUSTER ---
+    public final TurretSubsystem rightTurret = new TurretSubsystem(25, "RightTurret");
+    public final ShooterSubsystem rightShooter = new ShooterSubsystem(26, 27, "RightShooter");
+
+    // --- SUPERSTRUCTURE ---
+    public final Superstructure superstructure = new Superstructure(
+        leftTurret, leftShooter,
+        rightTurret, rightShooter,
+        drivetrain::getPose,
+        drivetrain:: ()-> getState().Speeds
+    );
 
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
@@ -73,9 +92,9 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-Driver_joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-Driver_joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-Driver_joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
 
@@ -86,42 +105,42 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        joystick.b().whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
+        Driver_joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+        Driver_joystick.b().whileTrue(drivetrain.applyRequest(() ->
+            point.withModuleDirection(new Rotation2d(-Driver_joystick.getLeftY(), -Driver_joystick.getLeftX()))
         ));
 
-        joystick.pov(0).whileTrue(drivetrain.applyRequest(() ->
+        Driver_joystick.pov(0).whileTrue(drivetrain.applyRequest(() ->
             forwardStraight.withVelocityX(0.5).withVelocityY(0))
         );
-        joystick.pov(180).whileTrue(drivetrain.applyRequest(() ->
+        Driver_joystick.pov(180).whileTrue(drivetrain.applyRequest(() ->
             forwardStraight.withVelocityX(-0.5).withVelocityY(0))
         );
         // reset the field-centric heading on left bumper press
-        joystick.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        Driver_joystick.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
 
         //Drive to Pose (Precise Positioning)
-        joystick.rightBumper().whileTrue(
+        Driver_joystick.rightBumper().whileTrue(
             new Precise_DriveToPose_cmd(
                 drivetrain, 
                 Constants.AutopilotConstants.kPathConstraints, 
                 () -> 0, 
                 () -> 2, 
-                joystick, 
-                joystick
+                Driver_joystick, 
+                Driver_joystick
             )
         );
 
         //Drive to Pose (Fast Positioning)
-        joystick.leftBumper().whileTrue(
+        Driver_joystick.leftBumper().whileTrue(
             new Fast_DriveToPose_cmd(
                 drivetrain, 
                 Constants.AutopilotConstants.kPathConstraints, 
                 () -> 0, 
                 () -> 0, 
-                joystick, 
-                joystick
+                Driver_joystick, 
+                Driver_joystick
             )
         );
 
