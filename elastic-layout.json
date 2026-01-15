@@ -1,0 +1,56 @@
+{
+  "version": 1.0,
+  "grid_size": 128,
+  "tabs": [
+    {
+      "name": "Subsystems",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Left_Target_Angle",
+            "x": 384.0,
+            "y": 128.0,
+            "width": 384.0,
+            "height": 384.0,
+            "type": "Radial Gauge",
+            "properties": {
+              "topic": "/SmartDashboard/Left/Aim/Target_Angle",
+              "period": 0.06,
+              "data_type": "double",
+              "start_angle": 180.0,
+              "end_angle": -180.0,
+              "min_value": -180.0,
+              "max_value": 180.0,
+              "number_of_labels": 8,
+              "wrap_value": false,
+              "show_pointer": true,
+              "show_ticks": true
+            }
+          },
+          {
+            "title": "Target_Angle",
+            "x": 1024.0,
+            "y": 128.0,
+            "width": 384.0,
+            "height": 384.0,
+            "type": "Radial Gauge",
+            "properties": {
+              "topic": "/SmartDashboard/Right/Aim/Target_Angle",
+              "period": 0.06,
+              "data_type": "double",
+              "start_angle": 180.0,
+              "end_angle": -180.0,
+              "min_value": -180.0,
+              "max_value": 180.0,
+              "number_of_labels": 8,
+              "wrap_value": false,
+              "show_pointer": true,
+              "show_ticks": true
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

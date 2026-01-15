@@ -24,7 +24,7 @@ public class Superstructure extends SubsystemBase {
     // Physical Offsets
     private final Translation2d LEFT_TURRET_OFFSET = new Translation2d(0.0, 0.25);
     private final Translation2d RIGHT_TURRET_OFFSET = new Translation2d(0.0, -0.25);
-    private final Translation2d FIELD_TARGET = new Translation2d(0.0, 5.55);
+    private final Translation2d FIELD_TARGET = new Translation2d(4.6, 4);
 
     // Status Flags
     private boolean isLeftLockedOn = false;
