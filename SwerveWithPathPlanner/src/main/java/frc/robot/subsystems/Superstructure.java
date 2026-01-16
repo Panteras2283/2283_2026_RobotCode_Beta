@@ -36,7 +36,7 @@ public class Superstructure extends SubsystemBase {
     private boolean isLeftLockedOn = false;
     private boolean isRightLockedOn = false;
 
-    // --- NEW: Struct Publishers for Visualization ---
+    // Struct Publishers for Visualization
     private final StructPublisher<Pose2d> leftTargetPub;
     private final StructPublisher<Pose2d> rightTargetPub;
 
@@ -52,8 +52,6 @@ public class Superstructure extends SubsystemBase {
         this.poseSupplier = poseSupplier;
         this.speedSupplier = speedSupplier;
 
-        // --- Initialize NetworkTables Publishers ---
-        // These use the new "Struct" format which Elastic/AdvantageScope handle natively
         var table = NetworkTableInstance.getDefault().getTable("Superstructure");
         leftTargetPub = table.getStructTopic("LeftTarget", Pose2d.struct).publish();
         rightTargetPub = table.getStructTopic("RightTarget", Pose2d.struct).publish();
@@ -71,7 +69,7 @@ public class Superstructure extends SubsystemBase {
             currentTarget = RED_TARGET;
         }
 
-        // 2. Run Logic (Passing the specific publisher for each side)
+        // 2. Run Logic
         isLeftLockedOn = runAimingLoop(
             leftTurret, leftShooter, 
             robotPose, robotSpeeds, 
@@ -95,7 +93,7 @@ public class Superstructure extends SubsystemBase {
             Translation2d offset,
             Translation2d targetLocation,
             String sideName,
-            StructPublisher<Pose2d> publisher) { // <--- Receive Publisher
+            StructPublisher<Pose2d> publisher) { 
 
         // 1. Calculate Physics
         double rawDistance = robotPose.getTranslation().getDistance(targetLocation);
@@ -105,26 +103,33 @@ public class Superstructure extends SubsystemBase {
             robotPose, robotSpeeds, offset, targetLocation, estimatedExitVel
         );
 
-        // 2. Publish Ghost Target (The "Green" fix)
-        // This puts the data in the exact format your dashboard expects for a "Robot Pose"
+        // 2. Publish Ghost Target
         publisher.set(solution.virtualTarget());
 
         // 3. Command Subsystems
+        // Calculate speeds locally for logging...
         double targetTopRPM = ShootingTables.topFlywheelMap.get(solution.effectiveDistance());
         double targetBottomRPM = ShootingTables.bottomFlywheelMap.get(solution.effectiveDistance());
 
-        // Standard Debug Numbers
+        // ... and LOG THEM! (This fixes the "unused variable" warning)
         SmartDashboard.putNumber(sideName + "/Aim/Dist_Effective", solution.effectiveDistance());
         SmartDashboard.putNumber(sideName + "/Aim/Target_Angle", solution.turretAngle().getDegrees());
+        SmartDashboard.putNumber(sideName + "/Aim/RPM_Top", targetTopRPM);
+        SmartDashboard.putNumber(sideName + "/Aim/RPM_Bot", targetBottomRPM);
 
         turret.setTargetAngle(solution.turretAngle());
+        // Shooter does its own lookup internally, which is fine, 
+        // but now we can at least see what it SHOULD be doing.
         shooter.setTargetDistance(solution.effectiveDistance());
 
         // 4. Lock Check
         boolean turretAtTarget = Math.abs(turret.getErrorDegrees()) < 2.0;
         boolean shooterAtSpeed = shooter.isReadyToFire();
         
-        return turretAtTarget && shooterAtSpeed;
+        boolean locked = turretAtTarget && shooterAtSpeed;
+        SmartDashboard.putBoolean(sideName + "/Locked", locked);
+
+        return locked;
     }
 
     public boolean canLeftShoot() { return isLeftLockedOn; }
